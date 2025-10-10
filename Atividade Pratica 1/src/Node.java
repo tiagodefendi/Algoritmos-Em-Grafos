@@ -1,5 +1,3 @@
-import java.util.ArrayList;
-
 public class Node {
     private final float id;
     private final String label;

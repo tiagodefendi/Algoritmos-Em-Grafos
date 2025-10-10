@@ -1,51 +1,67 @@
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
+import java.util.ArrayList;
 
 public class ReadGraphFile {
-    public static void getGraph(String filename) {
+    public static ArrayList<DirectedGraph> getGraphs(String filename) {
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+
+        ArrayList<DirectedGraph> graphs = new ArrayList<>();
+
         try {
             File file = new File(filename); // Abre o arquivo XML
             DocumentBuilder db = dbf.newDocumentBuilder();
             Document doc = db.parse(file);
 
             // Pega todos os grafos dentro do arquivo
-            NodeList graphs = doc.getElementsByTagName("graph");
+            NodeList graphList = doc.getElementsByTagName("graph");
 
-            for (int g = 0; g < graphs.getLength(); g++) {
-                Element graph = (Element) graphs.item(g);
-                System.out.println("Graph " + (g + 1) + ":");
+            for (int g = 0; g < graphList.getLength(); g++) {
+                Element graph = (Element) graphList.item(g);
+
+                DirectedGraph graphObj = new DirectedGraph();
 
                 // Pega os nós dentro deste grafo
                 NodeList nodeList = graph.getElementsByTagName("node");
-                System.out.println("  Nodes:");
+
                 for (int i = 0; i < nodeList.getLength(); i++) {
                     Element node = (Element) nodeList.item(i);
-                    String id = node.getAttribute("id");
+                    String idStr = node.getAttribute("id");
+                    float id = Float.parseFloat(idStr);
                     String label = node.getAttribute("label");
-                    System.out.println("    id=" + id + ", label=" + label);
+                    Node nodeObj = new Node(id, label);
+                    graphObj.addNode(nodeObj);
                 }
 
                 // Pega as arestas dentro deste grafo
                 NodeList edgeList = graph.getElementsByTagName("edge");
-                System.out.println("  Edges:");
                 for (int i = 0; i < edgeList.getLength(); i++) {
                     Element edge = (Element) edgeList.item(i);
-                    String id = edge.getAttribute("id");
-                    String source = edge.getAttribute("source");
-                    String target = edge.getAttribute("target");
-                    System.out.println("    id=" + id + ", source=" + source + ", target=" + target);
+                    String idStr = edge.getAttribute("id");
+                    int id = Integer.parseInt(idStr);
+                    String sourceStr = edge.getAttribute("source");
+                    float source = Float.parseFloat(sourceStr);
+                    String targetStr = edge.getAttribute("target");
+                    float target = Float.parseFloat(targetStr);
+                    Node nodeSource = graphObj.getNode(source);
+                    Node nodeTarget = graphObj.getNode(target);
+                    Edge edgeObj = new Edge(id, nodeSource, nodeTarget);
+                    graphObj.addEdge(edgeObj);
                 }
+
+                graphs.add(graphObj);
             }
+
         }
         catch (Exception e) {
             e.printStackTrace();
         }
+
+        return graphs;
     }
 }
